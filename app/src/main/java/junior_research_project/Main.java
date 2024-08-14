@@ -5,11 +5,9 @@ package junior_research_project;
 
 public class Main {
     public static void main(String[] args) {
-        int numAgents = 100;
-        int numIterations = 1000;
+        int numIterations = 100;
 
-        Simulation simulation = new Simulation(numAgents);
+        Simulation simulation = new Simulation();
         simulation.runSimulation(numIterations);
-        simulation.printResults();
     }
 }
