@@ -1,0 +1,1 @@
+This is my junior research project. I eventually plan for it to accurately simulate the effects of an epidemic on an economy through agent-based Monte Carlo simulation.
