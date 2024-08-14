@@ -3,6 +3,8 @@ package junior_research_project;
 import java.util.ArrayList;
 import java.util.List;
 
+import junior_research_project.Agent.State;
+
 
 public class Simulation {
     private final List<Agent> agents;
@@ -25,7 +27,7 @@ public class Simulation {
             timeStep++;
             applyPolicies();
             updateAgents();
-            calculateEconomicImpact();
+            calculateStats();
         }
     }
 
@@ -41,10 +43,9 @@ public class Simulation {
         }
     }
 
-    private void calculateEconomicImpact() {
-        double totalProductivity = agents.stream()
-            .mapToDouble(Agent::getEconomicProductivity)
-            .sum();
-        System.out.println("Time Step: " + timeStep + " Total Economic Productivity: " + totalProductivity);
+    private void calculateStats() {
+        double totalProductivity = agents.stream().mapToDouble(Agent::getEconomicProductivity).sum();
+        long infected = agents.stream().filter(Agent -> Agent.getState() == State.INFECTED).count();
+        System.out.println("Time Step: " + timeStep + " Total Economic Productivity: " + totalProductivity + " Infected: " + infected);
     }
 }
