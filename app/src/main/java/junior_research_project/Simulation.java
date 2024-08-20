@@ -11,9 +11,13 @@ public class Simulation {
     private boolean vaccinationStarted;
     private int activeInfections;
     private int totalDeaths;
+    private int living;
+    private int deaths;
+    private int births;
 
     public Simulation() {
         agents = new ArrayList<>();
+        living = Constants.TOTAL_POPULATION;
         for (int i = 0; i < Constants.TOTAL_POPULATION; i++) {
             agents.add(new Agent());
         }
@@ -25,7 +29,7 @@ public class Simulation {
 
         // Infect initial agents
         for (int i = 0; i < Constants.INITIAL_INFECTED; i++) {
-            agents.get(i).updateState(false, false);
+            agents.get(i).setInfected();
         }
     }
 
@@ -45,41 +49,51 @@ public class Simulation {
                 .count();
 
         // Dynamic social distancing policy
-        if (activeInfections > Constants.TOTAL_POPULATION * 0.1) {
+        if (activeInfections > living * 0.1) {
             socialDistancing = true;
-        } else if (activeInfections < Constants.TOTAL_POPULATION * 0.05) {
+        } else if (activeInfections < living * 0.05) {
             socialDistancing = false;
         }
 
         // Dynamic vaccination policy
-        if (activeInfections > Constants.TOTAL_POPULATION * 0.2) {
+        if (activeInfections > living * 0.2) {
             vaccinationStarted = true;
         }
     }
 
     private void updateAgents() {
+        deaths = 0;
         for (Agent agent : agents) {
-            agent.updateState(socialDistancing, vaccinationStarted);
-            if (agent.getState() == Agent.State.DEAD) {
-                totalDeaths++;
+            Agent.State beforeState;
+            beforeState = agent.getState();
+            agent.updateState(socialDistancing, vaccinationStarted, agents);
+            if (agent.getState() != beforeState){
+                if (agent.getState() == Agent.State.DEAD) {
+                    deaths ++;
+                    living --;
+                    totalDeaths++;
+                }
             }
         }
     }
 
     private void handleBirths() {
-        int birthchances = (int) (agents.size());
-        int births = 0;
+        int birthchances = (living);
+        births = 0;
         List<Agent> newAgents = new ArrayList<>();
         for (int i = 0; i < birthchances; i++) {
             if (Math.random() < Constants.BIRTH_RATE){
                 Agent parent1 = agents.get(new Random().nextInt(agents.size()));
                 Agent parent2 = agents.get(new Random().nextInt(agents.size()));
-                births += 1;
+                if ((parent1.getAge() < 18 && parent2.getAge() < 18) && (parent1.getAge() < 65 && parent2.getAge() < 65)){
+                    births ++;
+                    living ++;
+                }
                 newAgents.add(new Agent(parent1, parent2)); // Newborns inherit occupation from parents
             }
         }
         agents.addAll(newAgents);
-        System.out.println("Births: " + births);
+        System.out.println("Population Change: " + (births - deaths));
     }
 
     private void calculateEconomicImpact() {
@@ -88,9 +102,9 @@ public class Simulation {
             .mapToDouble(Agent::getEconomicProductivity)
             .sum();
         System.out.println("Time Step: " + timeStep +
-                           " Total Economic Productivity: " + totalProductivity +
+                           " Total Economic Productivity: " + (int) totalProductivity +
                            " Active Infections: " + activeInfections +
                            " Total Deaths: " + totalDeaths +
-                           " Population Size: " + agents.size());
+                           " Living: " + living);
     }
 }
