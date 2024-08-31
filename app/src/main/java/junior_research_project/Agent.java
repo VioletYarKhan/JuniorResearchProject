@@ -17,12 +17,14 @@ public class Agent {
     private double age;
     private int daysRecovered;
     private Agent interactedAgent;
-    private int yearsHigherEducation;
+    private final int yearsHigherEducation;
     private int timesInfected;
+    private int daysSusceptible;
+
 
     public Agent() {
         this.state = State.SUSCEPTIBLE;
-        this.age = new Random().nextDouble(Constants.MAX_AGE);
+        this.age = new Random().nextDouble(Constants.WORKING_AGE_MAX);
         this.assignedOccupation = assignOccupation(null, null);
         this.occupation = updateOccupation(this.assignedOccupation);
         this.economicProductivity = 0;
@@ -33,6 +35,7 @@ public class Agent {
         this.daysRecovered = 0;
         this.yearsHigherEducation = new Random().nextInt(Constants.MAX_STUDENT_AGE_UPPER_BOUND) - Constants.MAX_STUDENT_AGE_LOWER_BOUND;
         this.timesInfected = 0;
+        this.daysSusceptible = 0;
     }
 
     public Agent(Agent parent1, Agent parent2) {
@@ -43,6 +46,7 @@ public class Agent {
         this.daysInfected = 0;
         this.daysRecovered = 0;
         this.timesInfected = 0;
+        this.daysSusceptible = 0;
         this.yearsHigherEducation = (parent1.getEducation() + parent2.getEducation())/2;
     }
 
@@ -75,6 +79,10 @@ public class Agent {
     public void updateState(boolean socialDistancing, boolean vaccinated, List<Agent> agents) {
         interactedAgent = agents.get(new Random().nextInt(agents.size()));
         if (state == State.SUSCEPTIBLE && !vaccinated){
+            this.daysSusceptible ++;
+            if(this.daysSusceptible > (365*(Math.random()+1)) && this.timesInfected > 0){
+                this.timesInfected --;
+            }
             if (interactedAgent.getState() == State.INFECTED) {
                 double transmissionRate = Constants.TRANSMISSION_RATE;
                 if (occupation == Occupation.ESSENTIAL_WORKER) {
@@ -94,7 +102,6 @@ public class Agent {
         }
 
         if (state == State.INFECTED) {
-            interactedAgent = agents.get(new Random().nextInt(agents.size()));
             if ((interactedAgent.getState() == State.SUSCEPTIBLE) && (this.daysInfected > Constants.PRESYMPTOMS_TIME && this.daysInfected < Constants.RECOVERY_TIME)) {
                 double transmissionRate = Constants.TRANSMISSION_RATE * Constants.INFECTED_INTERACTION_LOSS;
                 if (interactedAgent.getOccupation() == Occupation.ESSENTIAL_WORKER) {
@@ -109,8 +116,8 @@ public class Agent {
                     interactedAgent.state = State.INFECTED;
                     interactedAgent.daysInfected = 0;
                     interactedAgent.timesInfected ++;
+                }
             }
-        }
             daysInfected++;
             economicProductivity *= (Math.random() / 8);
             double mortalityRate = Constants.MORTALITY_RATE;
@@ -139,11 +146,16 @@ public class Agent {
             daysRecovered ++;
             if (daysRecovered >= Constants.RECOVERED_IMMUNITY_TIME && Math.random() < (0.5 / (timesInfected + 1))) {
                 state = State.SUSCEPTIBLE;
+                daysSusceptible = 0;
             }
         }
         this.occupation = updateOccupation(this.assignedOccupation);
-        age += 1/365;
-        
+        this.age += 1/365.25;
+        if ((this.age >= Constants.WORKING_AGE_MAX) || (this.age <= Constants.MIN_STUDENT_AGE)){
+            if (Math.random() < 0.0003 * (this.age/Constants.MAX_AGE)){
+                this.state = State.DEAD;
+            }
+        }
     }
 
     public State getState() {

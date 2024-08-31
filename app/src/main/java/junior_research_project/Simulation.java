@@ -1,11 +1,13 @@
 package junior_research_project;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class Simulation {
-    private List<Agent> agents;
+    private final List<Agent> agents;
     private int timeStep;
     private boolean socialDistancing;
     private boolean vaccinationStarted;
@@ -14,6 +16,7 @@ public class Simulation {
     private int living;
     private int deaths;
     private int births;
+    private FileWriter fileWriter;
 
     public Simulation() {
         agents = new ArrayList<>();
@@ -31,6 +34,14 @@ public class Simulation {
         for (int i = 0; i < Constants.INITIAL_INFECTED; i++) {
             agents.get(i).setInfected();
         }
+
+        // Initialize the file writer
+        try {
+            fileWriter = new FileWriter("simulation_output.csv");
+            fileWriter.write("Timestep,Living Population,Active Infections,Economic Productivity\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void runSimulation(int totalSteps) {
@@ -41,36 +52,31 @@ public class Simulation {
             handleBirths();
             calculateEconomicImpact();
         }
+
+        // Close the file writer
+        try {
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Total Population Change: " + (living - Constants.TOTAL_POPULATION));
     }
 
     private void applyPolicies() {
         activeInfections = (int) agents.stream()
                 .filter(agent -> agent.getState() == Agent.State.INFECTED)
                 .count();
-
-        // Dynamic social distancing policy
-        if (activeInfections > living * 0.1) {
-            socialDistancing = true;
-        } else if (activeInfections < living * 0.05) {
-            socialDistancing = false;
-        }
-
-        // Dynamic vaccination policy
-        if (activeInfections > living * 0.2) {
-            vaccinationStarted = true;
-        }
     }
 
     private void updateAgents() {
         deaths = 0;
         for (Agent agent : agents) {
-            Agent.State beforeState;
-            beforeState = agent.getState();
-            agent.updateState(socialDistancing, vaccinationStarted, agents);
-            if (agent.getState() != beforeState){
+            if (agent.getState() != Agent.State.DEAD) {
+                agent.updateState(socialDistancing, vaccinationStarted, agents);
                 if (agent.getState() == Agent.State.DEAD) {
-                    deaths ++;
-                    living --;
+                    deaths++;
+                    living--;
                     totalDeaths++;
                 }
             }
@@ -82,12 +88,12 @@ public class Simulation {
         births = 0;
         List<Agent> newAgents = new ArrayList<>();
         for (int i = 0; i < birthchances; i++) {
-            if (Math.random() < Constants.BIRTH_RATE){
+            if (Math.random() < Constants.BIRTH_RATE) {
                 Agent parent1 = agents.get(new Random().nextInt(agents.size()));
                 Agent parent2 = agents.get(new Random().nextInt(agents.size()));
-                if ((parent1.getAge() < 18 && parent2.getAge() < 18) && (parent1.getAge() < 65 && parent2.getAge() < 65)){
-                    births ++;
-                    living ++;
+                if ((parent1.getAge() < 18 && parent2.getAge() < 18) && (parent1.getAge() < 65 && parent2.getAge() < 65) && (parent1.getState() != Agent.State.INFECTED) && (parent2.getState() != Agent.State.INFECTED)) {
+                    births++;
+                    living++;
                 }
                 newAgents.add(new Agent(parent1, parent2)); // Newborns inherit occupation from parents
             }
@@ -101,6 +107,14 @@ public class Simulation {
             .filter(agent -> agent.getState() != Agent.State.DEAD)
             .mapToDouble(Agent::getEconomicProductivity)
             .sum();
+
+        // Write data to file
+        try {
+            fileWriter.write(timeStep + "," + living + "," + activeInfections + "," + totalProductivity + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         System.out.println("Time Step: " + timeStep +
                            " Total Economic Productivity: " + (int) totalProductivity +
                            " Active Infections: " + activeInfections +
