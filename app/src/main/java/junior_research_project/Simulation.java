@@ -17,6 +17,7 @@ public class Simulation {
     private int deaths;
     private int births;
     private FileWriter fileWriter;
+    private int populationChange;
 
     public Simulation() {
         agents = new ArrayList<>();
@@ -38,7 +39,7 @@ public class Simulation {
         // Initialize the file writer
         try {
             fileWriter = new FileWriter("simulation_output.csv");
-            fileWriter.write("Timestep,Living Population,Active Infections,Economic Productivity\n");
+            fileWriter.write("Timestep,Living Population,Active Infections,Economic Productivity,Population Change\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -99,7 +100,8 @@ public class Simulation {
             }
         }
         agents.addAll(newAgents);
-        System.out.println("Population Change: " + (births - deaths));
+        populationChange = (births - deaths);
+        // System.out.println("Population Change: " + (births - deaths));
     }
 
     private void calculateEconomicImpact() {
@@ -110,15 +112,15 @@ public class Simulation {
 
         // Write data to file
         try {
-            fileWriter.write(timeStep + "," + living + "," + activeInfections + "," + totalProductivity + "\n");
+            fileWriter.write(timeStep + "," + living + "," + activeInfections + "," + totalProductivity + "," + populationChange + "\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        System.out.println("Time Step: " + timeStep +
+        /* System.out.println("Time Step: " + timeStep +
                            " Total Economic Productivity: " + (int) totalProductivity +
                            " Active Infections: " + activeInfections +
                            " Total Deaths: " + totalDeaths +
-                           " Living: " + living);
+                           " Living: " + living);*/
     }
 }

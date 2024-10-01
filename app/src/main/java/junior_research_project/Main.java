@@ -3,6 +3,9 @@
  */
 package junior_research_project;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 public class Main {
     public static void main(String[] args) {
         long timer = System.currentTimeMillis();
@@ -11,5 +14,28 @@ public class Main {
         Simulation simulation = new Simulation();
         simulation.runSimulation(numIterations);
         System.out.println((int) ((System.currentTimeMillis() - timer)/1000) + " Seconds");
+
+        try {
+            // Command to run Python file
+            ProcessBuilder processBuilder = new ProcessBuilder("python3", "/Users/nicholas/Desktop/Junior_Research_Project/app/src/main/java/junior_research_project/DataAnalysis.py");
+
+            // Start the process
+            Process process = processBuilder.start();
+
+            // Read output from the Python script
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            // Wait for the process to complete
+            int exitCode = process.waitFor();
+            System.out.println("Python script executed with exit code: " + exitCode);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
     }
 }
