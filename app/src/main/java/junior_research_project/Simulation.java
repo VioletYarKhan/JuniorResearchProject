@@ -31,11 +31,6 @@ public class Simulation {
         activeInfections = 0;
         totalDeaths = 0;
 
-        // Infect initial agents
-        for (int i = 0; i < Constants.INITIAL_INFECTED; i++) {
-            agents.get(i).setInfected();
-        }
-
         // Initialize the file writer
         try {
             fileWriter = new FileWriter("simulation_output.csv");
@@ -47,11 +42,21 @@ public class Simulation {
 
     public void runSimulation(int totalSteps) {
         for (int i = 0; i < totalSteps; i++) {
+            if(i == Constants.START_INFECTION_TIME){
+                // Infect initial agents
+                for (int j = 0; j < Constants.INITIAL_INFECTED; j++) {
+                    agents.get(j).setInfected();
+                }
+            }
             timeStep++;
             updateAgents();
             applyPolicies();
             handleBirths();
             calculateEconomicImpact();
+            /* System.out.println("Time Step: " + timeStep +
+                           " Active Infections: " + activeInfections +
+                           " Total Deaths: " + totalDeaths +
+                           " Living: " + living);*/
         }
 
         // Close the file writer
@@ -116,11 +121,5 @@ public class Simulation {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        /* System.out.println("Time Step: " + timeStep +
-                           " Total Economic Productivity: " + (int) totalProductivity +
-                           " Active Infections: " + activeInfections +
-                           " Total Deaths: " + totalDeaths +
-                           " Living: " + living);*/
     }
 }

@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
 public class Main {
     public static void main(String[] args) {
         long timer = System.currentTimeMillis();
-        int numIterations = 1461;
+        int numIterations = 1300;
 
         Simulation simulation = new Simulation();
         simulation.runSimulation(numIterations);

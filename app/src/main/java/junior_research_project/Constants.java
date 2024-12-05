@@ -1,11 +1,12 @@
 package junior_research_project;
 
 public class Constants {
-    public static final double TRANSMISSION_RATE = 0.065;
+    public static final double TRANSMISSION_RATE = 0.07;
     public static final int RECOVERY_TIME = 14;
-    public static final int RECOVERED_IMMUNITY_TIME = 21;
+    public static final int RECOVERED_IMMUNITY_TIME = 28;
     public static final double VACCINATION_EFFECTIVENESS = 0.95;
     public static final int INITIAL_INFECTED = 10;
+    public static final int START_INFECTION_TIME = 0;
     public static final int TOTAL_POPULATION = 80000;
     public static final double SOCIAL_DISTANCING_EFFECT = 0.75;
     public static final double MORTALITY_RATE = 0.004;
@@ -24,6 +25,6 @@ public class Constants {
     public static final int PARENT_AGE_MIN = 18;
     public static final int PARENT_AGE_MAX = 40;
     public static final int PRESYMPTOMS_TIME = 3;
-    public static final double INFECTED_INTERACTION_LOSS = 0.35;
+    public static final double INFECTED_INTERACTION_LOSS = 0.4;
     public static final double TRANSITION_RATE = 1;
 }
